@@ -4,8 +4,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.Exceptions.EntityNotFoundException;
+import com.example.demo.Exceptions.UsernameUniqueViolationException;
 import com.example.demo.entity.Usuario;
 import com.example.demo.repositories.UsuarioRepository;
 
@@ -24,7 +27,15 @@ public class UsuariosService {
 	// gerenciar ou fechar a transação
 	@Transactional
 	public Usuario salvar(Usuario usuario) {
-		return usuarioRepository.save(usuario);
+		try {
+			return usuarioRepository.save(usuario);
+		} catch (DataIntegrityViolationException e) {
+			throw new UsernameUniqueViolationException(
+					String.format("Username {%s} já cadastrado ", usuario.getUsername()));
+		} catch (com.example.demo.Exceptions.UsernameUniqueViolationException e) {
+			throw new UsernameUniqueViolationException(
+					String.format("Username {%s} já cadastrado ", usuario.getUsername()));
+		}
 	}
 
 	// indica que esse método é exclusivo para uma consulta no banco de dados
@@ -32,15 +43,11 @@ public class UsuariosService {
 	@Transactional
 	public Usuario buscarPorId(Long id) {
 		Optional<Usuario> obj = usuarioRepository.findById(id);
-		return obj.orElseThrow(() -> new RuntimeException("Error, usuario não encontrado"));
+		return obj.orElseThrow(() -> new EntityNotFoundException("Error, usuario não encontrado"));
 	}
 
 	@Transactional
 	public Usuario editarSenha(Long id, String senhaAtual, String novaSenha, String confirmaSenha) {
-		System.out.println("===========================================================");
-		System.out.print(!novaSenha.equals(confirmaSenha));
-		System.out.println(novaSenha);
-		System.out.println(confirmaSenha);
 		if (!novaSenha.equals(confirmaSenha)) {
 			throw new RuntimeException("Nova senha não confere com confirmação de senha.");
 		}
