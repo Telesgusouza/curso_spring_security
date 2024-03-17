@@ -34,15 +34,27 @@ public class UsuariosService {
 		Optional<Usuario> obj = usuarioRepository.findById(id);
 		return obj.orElseThrow(() -> new RuntimeException("Error, usuario não encontrado"));
 	}
-	
+
 	@Transactional
-	public Usuario editarSenha(Long id, String password) {
+	public Usuario editarSenha(Long id, String senhaAtual, String novaSenha, String confirmaSenha) {
+		System.out.println("===========================================================");
+		System.out.print(!novaSenha.equals(confirmaSenha));
+		System.out.println(novaSenha);
+		System.out.println(confirmaSenha);
+		if (!novaSenha.equals(confirmaSenha)) {
+			throw new RuntimeException("Nova senha não confere com confirmação de senha.");
+		}
+
 		Usuario user = buscarPorId(id);
-		user.setPassword(password);
+
+		if (!user.getPassword().equals(senhaAtual)) {
+			throw new RuntimeException("Sua senha não confere.");
+		}
+
+		user.setPassword(novaSenha);
 		return usuarioRepository.save(user);
 	}
-	
-	
+
 	public List<Usuario> buscarTodos() {
 		return usuarioRepository.findAll();
 	}

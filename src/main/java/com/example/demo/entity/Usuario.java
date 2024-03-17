@@ -137,6 +137,8 @@ public class Usuario implements Serializable {
 	public static long getSerialversionuid() {
 		return serialVersionUID;
 	}
+	
+	
 
 	///////////////
 
@@ -161,5 +163,6 @@ public class Usuario implements Serializable {
 		Usuario other = (Usuario) obj;
 		return Objects.equals(id, other.id);
 	}
+
 
 }

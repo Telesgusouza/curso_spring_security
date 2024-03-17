@@ -17,6 +17,7 @@ import com.example.demo.entity.Usuario;
 import com.example.demo.services.UsuariosService;
 import com.example.demo.web.dto.UsuarioCretedDTO;
 import com.example.demo.web.dto.UsuarioResponseDto;
+import com.example.demo.web.dto.UsuarioSenhaDto;
 import com.example.demo.web.dto.mapper.UsuarioMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -32,26 +33,27 @@ public class UsuarioController {
 
 	@PostMapping
 	public ResponseEntity<UsuarioResponseDto> create(@RequestBody UsuarioCretedDTO cretedDTO) {
+
 		Usuario user = usuariosService.salvar(UsuarioMapper.toUsuario(cretedDTO));
 		return ResponseEntity.status(HttpStatus.CREATED).body(UsuarioMapper.toDto(user));
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<Usuario> getById(@PathVariable Long id) {
+	public ResponseEntity<UsuarioResponseDto> getById(@PathVariable Long id) {
 		Usuario user = usuariosService.buscarPorId(id);
-		return ResponseEntity.status(HttpStatus.OK).body(user);
+		return ResponseEntity.status(HttpStatus.OK).body(UsuarioMapper.toDto(user));
 	}
 
 	@PatchMapping("/{id}")
-	public ResponseEntity<Usuario> updatePassword(@PathVariable Long id, @RequestBody Usuario usuario) {
-		Usuario user = usuariosService.editarSenha(id, usuario.getPassword());
-		return ResponseEntity.status(HttpStatus.OK).body(user);
+	public ResponseEntity<UsuarioResponseDto> updatePassword(@PathVariable Long id, @RequestBody UsuarioSenhaDto dto) {
+		Usuario user = usuariosService.editarSenha(id, dto.getSenhaAtual(), dto.getNovaSenha(), dto.getConfimaSenha());
+		return ResponseEntity.status(HttpStatus.OK).body(UsuarioMapper.toDto(user));
 	}
 
 	@GetMapping
-	public ResponseEntity<List<Usuario>> getAll() {
+	public ResponseEntity<List<UsuarioResponseDto>> getAll() {
 		List<Usuario> users = usuariosService.buscarTodos();
-		return ResponseEntity.status(HttpStatus.OK).body(users);
+		return ResponseEntity.status(HttpStatus.OK).body(UsuarioMapper.toListDTO(users));
 	}
 
 }
