@@ -25,6 +25,17 @@ public class UsuarioSenhaDto {
 	@Size(min = 6, max = 18)
 	private String confimaSenha;
 
+	public UsuarioSenhaDto() {}
+
+	public UsuarioSenhaDto(@NotBlank @Size(min = 6, max = 18) String senhaAtual,
+			@NotBlank @Size(min = 6, max = 18) String novaSenha,
+			@NotBlank @Size(min = 6, max = 18) String confimaSenha) {
+		super();
+		this.senhaAtual = senhaAtual;
+		this.novaSenha = novaSenha;
+		this.confimaSenha = confimaSenha;
+	}
+
 	public String getSenhaAtual() {
 		return senhaAtual;
 	}

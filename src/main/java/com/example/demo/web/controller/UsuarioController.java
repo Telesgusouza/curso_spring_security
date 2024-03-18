@@ -52,7 +52,7 @@ public class UsuarioController {
 			@ApiResponse(responseCode = "409", description = "Usuario e-mail já cadastrado no sistema", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class))),
 
 			// caso de erro
-			@ApiResponse(responseCode = "422", description = "Recuro não processado por dados de entrada invalidos", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class))) })
+			@ApiResponse(responseCode = "422", description = "Recurso não processado por dados de entrada invalidos", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class))) })
 	@PostMapping
 	public ResponseEntity<UsuarioResponseDto> create(@Valid @RequestBody UsuarioCretedDTO cretedDTO) {
 
@@ -60,11 +60,32 @@ public class UsuarioController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(UsuarioMapper.toDto(user));
 	}
 
+	@Operation(summary = "Recuperar usuario por id", description = "Recuperar usuario por id", responses = {
+
+			// caso de sucesso
+			@ApiResponse(responseCode = "201", description = "Recurso recuperado com sucesso", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioResponseDto.class))),
+
+			// caso de erro
+			@ApiResponse(responseCode = "404", description = "Recurso não encontrado", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class))) })
+
 	@GetMapping("/{id}")
 	public ResponseEntity<UsuarioResponseDto> getById(@PathVariable Long id) {
 		Usuario user = usuariosService.buscarPorId(id);
 		return ResponseEntity.status(HttpStatus.OK).body(UsuarioMapper.toDto(user));
 	}
+	
+	@Operation(summary = "Atualizar senha", description = "Atualizar senha por id", responses = {
+
+			// caso de sucesso
+			@ApiResponse(responseCode = "204", 
+					description = "Senha atualizada com sucesso", 
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = void.class))),
+
+			// caso de erro
+			@ApiResponse(responseCode = "404", description = "Recurso não encontrado", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class))),
+			// erro
+			@ApiResponse(responseCode = "400", description = "Senha não confere", 
+			content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class)))})
 
 	@PatchMapping("/{id}")
 	public ResponseEntity<UsuarioResponseDto> updatePassword(@PathVariable Long id,
