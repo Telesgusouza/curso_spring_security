@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,9 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.entity.Usuario;
+import com.example.demo.jwt.TokenService;
 import com.example.demo.services.UsuariosService;
 import com.example.demo.web.Exceptions.ErrorMessage;
+import com.example.demo.web.dto.LoginResponseDTO;
 import com.example.demo.web.dto.UsuarioCretedDTO;
+import com.example.demo.web.dto.UsuarioLoginDto;
 import com.example.demo.web.dto.UsuarioResponseDto;
 import com.example.demo.web.dto.UsuarioSenhaDto;
 import com.example.demo.web.dto.mapper.UsuarioMapper;
@@ -35,13 +40,15 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("api/v1/usuarios")
 public class UsuarioController {
 
-	// ADICIONAR O FINAL final
+	@Autowired
+	private AuthenticationManager authenticationManager;
+
+	@Autowired
+	private TokenService tokenService;
+
 	@Autowired
 	private UsuariosService usuariosService;
 
-	// summary - um resumo do que ele fará
-	// description - uma descrição do que ele fara
-	// responses- se trata das respostas do recurso
 	@Operation(summary = "Criar novo usuario", description = "Recurso para criar um novo usuario", responses = {
 
 			// caso de sucesso
@@ -73,19 +80,16 @@ public class UsuarioController {
 		Usuario user = usuariosService.buscarPorId(id);
 		return ResponseEntity.status(HttpStatus.OK).body(UsuarioMapper.toDto(user));
 	}
-	
+
 	@Operation(summary = "Atualizar senha", description = "Atualizar senha por id", responses = {
 
 			// caso de sucesso
-			@ApiResponse(responseCode = "204", 
-					description = "Senha atualizada com sucesso", 
-					content = @Content(mediaType = "application/json", schema = @Schema(implementation = void.class))),
+			@ApiResponse(responseCode = "204", description = "Senha atualizada com sucesso", content = @Content(mediaType = "application/json", schema = @Schema(implementation = void.class))),
 
 			// caso de erro
 			@ApiResponse(responseCode = "404", description = "Recurso não encontrado", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class))),
 			// erro
-			@ApiResponse(responseCode = "400", description = "Senha não confere", 
-			content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class)))})
+			@ApiResponse(responseCode = "400", description = "Senha não confere", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorMessage.class))) })
 
 	@PatchMapping("/{id}")
 	public ResponseEntity<UsuarioResponseDto> updatePassword(@PathVariable Long id,
@@ -98,6 +102,27 @@ public class UsuarioController {
 	public ResponseEntity<List<UsuarioResponseDto>> getAll() {
 		List<Usuario> users = usuariosService.buscarTodos();
 		return ResponseEntity.status(HttpStatus.OK).body(UsuarioMapper.toListDTO(users));
+	}
+
+	/////////////////////////
+	// auth
+
+	@PostMapping("/login")
+	public ResponseEntity<?> login(@RequestBody @Valid UsuarioLoginDto data) {
+
+		System.out.println("=======================");
+		System.out.println(data);
+		System.out.println(data.username());
+		System.out.println(data.password());
+
+		var usernamePasword = new UsernamePasswordAuthenticationToken(data.username(), data.password());
+		var auth = this.authenticationManager.authenticate(usernamePasword);
+
+		// prcisamos criar o novo token para usar durante a aplicação
+		var token = tokenService.generateToken((Usuario) auth.getPrincipal());
+
+		// depois de criado o dto
+		return ResponseEntity.ok(new LoginResponseDTO(token));
 	}
 
 }

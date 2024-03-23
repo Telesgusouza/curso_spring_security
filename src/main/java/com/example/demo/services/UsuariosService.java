@@ -1,10 +1,13 @@
 package com.example.demo.services;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Exceptions.EntityNotFoundException;
@@ -17,33 +20,29 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
-public class UsuariosService {
+public class UsuariosService implements UserDetailsService {
 
 	// ADICIONAR FINAL
 	@Autowired
 	private UsuarioRepository usuarioRepository;
 
-	// isso indica que o Spring ficara responsavel pela transação, sejá abrir
-	// gerenciar ou fechar a transação
+	private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
 	@Transactional
 	public Usuario salvar(Usuario usuario) {
 		try {
+			usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
 			return usuarioRepository.save(usuario);
-		} catch (DataIntegrityViolationException e) {
+		} catch (org.springframework.dao.DataIntegrityViolationException ex) {
 			throw new UsernameUniqueViolationException(
-					String.format("Username {%s} já cadastrado ", usuario.getUsername()));
-		} catch (com.example.demo.Exceptions.UsernameUniqueViolationException e) {
-			throw new UsernameUniqueViolationException(
-					String.format("Username {%s} já cadastrado ", usuario.getUsername()));
+					String.format("Username '%s' já cadastrado", usuario.getUsername()));
 		}
 	}
 
-	// indica que esse método é exclusivo para uma consulta no banco de dados
-	// adicionar depois | readOnly = true
 	@Transactional
 	public Usuario buscarPorId(Long id) {
-		Optional<Usuario> obj = usuarioRepository.findById(id);
-		return obj.orElseThrow(() -> new EntityNotFoundException("Error, usuario não encontrado"));
+		return usuarioRepository.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException(String.format("Usuário id=%s não encontrado", id)));
 	}
 
 	@Transactional
@@ -53,17 +52,36 @@ public class UsuariosService {
 		}
 
 		Usuario user = buscarPorId(id);
-
-		if (!user.getPassword().equals(senhaAtual)) {
+		if (!passwordEncoder.matches(senhaAtual, user.getPassword())) {
 			throw new RuntimeException("Sua senha não confere.");
 		}
 
-		user.setPassword(novaSenha);
-		return usuarioRepository.save(user);
+		user.setPassword(passwordEncoder.encode(novaSenha));
+		return user;
 	}
 
+	@Transactional
 	public List<Usuario> buscarTodos() {
 		return usuarioRepository.findAll();
 	}
 
+	@Transactional
+	public Usuario buscarPorUsername(String username) {
+		Usuario obj = (Usuario) usuarioRepository.findByUsername(username);
+		return obj;
+//		return usuarioRepository.findByUsername(username).orElseThrow(
+//				() -> new EntityNotFoundException(String.format("Usuario com '%s' não encontrado", username)));
+	}
+
+	@Transactional
+	public Usuario.Role buscarRolePorUsername(String username) {
+		return usuarioRepository.findRoleByUsername(username);
+	}
+
+	
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		// TODO Auto-generated method stub
+		return usuarioRepository.findByUsername(username);
+	}
 }
