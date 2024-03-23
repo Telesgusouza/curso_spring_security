@@ -23,6 +23,7 @@ import com.example.demo.web.dto.LoginResponseDTO;
 import com.example.demo.web.dto.UsuarioCretedDTO;
 import com.example.demo.web.dto.UsuarioLoginDto;
 import com.example.demo.web.dto.UsuarioResponseDto;
+import com.example.demo.web.dto.UsuarioSenha1Dto;
 import com.example.demo.web.dto.UsuarioSenhaDto;
 import com.example.demo.web.dto.mapper.UsuarioMapper;
 
@@ -32,10 +33,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @Tag(name = "Usuario", description = "Contemm todas as operações relativas aos recursos para cadastro, edição e leitura de um usuario")
-@RequiredArgsConstructor
 @RestController
 @RequestMapping("api/v1/usuarios")
 public class UsuarioController {
@@ -93,8 +92,12 @@ public class UsuarioController {
 
 	@PatchMapping("/{id}")
 	public ResponseEntity<UsuarioResponseDto> updatePassword(@PathVariable Long id,
-			@Valid @RequestBody UsuarioSenhaDto dto) {
-		Usuario user = usuariosService.editarSenha(id, dto.getSenhaAtual(), dto.getNovaSenha(), dto.getConfimaSenha());
+			@Valid @RequestBody UsuarioSenha1Dto dto) {
+
+		System.out.println("==============");
+		System.out.println("cheguei aqui");
+
+		Usuario user = usuariosService.editarSenha(id, dto.senhaAtual(), dto.novaSenha(), dto.confirmaSenha());
 		return ResponseEntity.status(HttpStatus.OK).body(UsuarioMapper.toDto(user));
 	}
 
@@ -109,11 +112,6 @@ public class UsuarioController {
 
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody @Valid UsuarioLoginDto data) {
-
-		System.out.println("=======================");
-		System.out.println(data);
-		System.out.println(data.username());
-		System.out.println(data.password());
 
 		var usernamePasword = new UsernamePasswordAuthenticationToken(data.username(), data.password());
 		var auth = this.authenticationManager.authenticate(usernamePasword);
