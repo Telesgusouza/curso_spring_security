@@ -11,10 +11,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 /*
  
  import org.springframework.security.core.Authentication;
- 
-  aqui faremos a parte da auditoria
-  
-  agora vá para a entity
   
  */
 

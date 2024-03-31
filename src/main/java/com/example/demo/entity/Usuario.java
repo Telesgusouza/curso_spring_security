@@ -33,7 +33,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "usuarios")
-@EntityListeners(AuditingEntityListener.class) /// 
+@EntityListeners(AuditingEntityListener.class) ///
 public class Usuario implements UserDetails, Serializable {
 	private static final long serialVersionUID = 4081721844315960137L;
 
@@ -56,15 +56,15 @@ public class Usuario implements UserDetails, Serializable {
 	@CreatedDate
 	@Column(name = "data_criacao")
 	private LocalDateTime dataCriacao;
-	
+
 	@LastModifiedDate
 	@Column(name = "data_modificacao")
 	private LocalDateTime dataModificacao;
-	
+
 	@CreatedBy
 	@Column(name = "criado_por")
 	private String criadoPor;
-	
+
 	@LastModifiedBy
 	@Column(name = "modificado_por")
 	private String modificadoPor;
@@ -90,18 +90,16 @@ public class Usuario implements UserDetails, Serializable {
 		this.criadoPor = criadoPor;
 		this.modificadoPor = modificadoPor;
 	}
-	
-	
 
 	///////////////////////
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		if(this.role == Role.ROLE_ADMIN) return List.of( 
-				new SimpleGrantedAuthority("ROLE_ADMIN"), 
-				new SimpleGrantedAuthority("ROLE_USER"));
-		
-		else return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+		if (this.role == Role.ROLE_ADMIN)
+			return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_CLIENTE"));
+
+		else
+			return List.of(new SimpleGrantedAuthority("ROLE_CLIENTE"));
 	}
 
 	@Override
@@ -129,10 +127,6 @@ public class Usuario implements UserDetails, Serializable {
 	}
 
 	//////////////////////
-	
-	
-	
-	
 
 	public Long getId() {
 		return id;
@@ -201,8 +195,6 @@ public class Usuario implements UserDetails, Serializable {
 	public static long getSerialversionuid() {
 		return serialVersionUID;
 	}
-	
-	
 
 	///////////////
 
@@ -227,6 +219,5 @@ public class Usuario implements UserDetails, Serializable {
 		Usuario other = (Usuario) obj;
 		return Objects.equals(id, other.id);
 	}
-
 
 }
