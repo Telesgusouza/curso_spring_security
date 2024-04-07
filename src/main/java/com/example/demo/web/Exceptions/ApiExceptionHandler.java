@@ -2,6 +2,7 @@ package com.example.demo.web.Exceptions;
 
 import java.nio.file.AccessDeniedException;
 
+import org.springframework.context.MessageSource;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,6 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+	// import org.springframework.context.MessageSource;
+	private MessageSource messageSource;
 
 	@ExceptionHandler(AccessDeniedException.class)
 	public ResponseEntity<ErrorMessage> accessDeniedException(MethodArgumentNotValidException ex,
@@ -48,7 +52,8 @@ public class ApiExceptionHandler {
 				.body(new ErrorMessage(request, HttpStatus.UNPROCESSABLE_ENTITY, "campos invalidos", result));
 	}
 
-	@ExceptionHandler({ UsernameUniqueViolationException.class, CpfUniqueViolationException.class, CodigoUniqueViolationException.class })
+	@ExceptionHandler({ UsernameUniqueViolationException.class, CpfUniqueViolationException.class,
+			CodigoUniqueViolationException.class })
 	public ResponseEntity<ErrorMessage> usernameUniqueViolationException(MethodArgumentNotValidException ex,
 			HttpServletRequest request) {
 

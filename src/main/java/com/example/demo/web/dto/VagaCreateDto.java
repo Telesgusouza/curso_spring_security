@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 
 public class VagaCreateDto {
 	
-//	@NotBlank
+	@NotBlank(message = "{NotBlank.vagaCreateDto.codigo}")
 	@Size(min = 4, max = 4)
 	private String codigo;
 	
